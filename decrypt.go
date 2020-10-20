@@ -15,7 +15,6 @@ package unencrypted
 import (
 	"encoding/hex"
 	"encoding/json"
-	"fmt"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -44,10 +43,6 @@ func (e *Encryptor) Decrypt(data map[string]interface{}, passphrase string) ([]b
 	key, err := hex.DecodeString(strings.TrimPrefix(ks.Key, "0x"))
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to decode key")
-	}
-
-	if len(key) != 32 {
-		return nil, fmt.Errorf("key of incorrect length %d", len(key))
 	}
 
 	return key, nil

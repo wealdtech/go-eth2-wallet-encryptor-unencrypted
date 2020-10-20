@@ -14,7 +14,6 @@
 package unencrypted_test
 
 import (
-	"encoding/json"
 	"testing"
 
 	assert "github.com/stretchr/testify/assert"
@@ -23,35 +22,48 @@ import (
 )
 
 func TestDecrypt(t *testing.T) {
+	circular := make(map[string]interface{})
+	circular["here"] = &circular
+
 	tests := []struct {
 		name   string
-		input  string
+		input  map[string]interface{}
 		output []byte
 		err    string
 	}{
 		{
+			name: "Nil",
+			err:  `no data supplied`,
+		},
+		{
+			name:  "Circular",
+			input: circular,
+			err:   `failed to parse keystore: json: unsupported value: encountered a cycle via *map[string]interface {}`,
+		},
+		{
 			name:  "KeyMissing",
-			input: `{}`,
+			input: map[string]interface{}{},
 			err:   `key missing`,
 		},
 		{
-			name:  "KeyWrongType",
-			input: `{"key":true}`,
-			err:   `failed to parse keystore: json: cannot unmarshal bool into Go struct field unencrypted.key of type string`,
+			name: "KeyWrongType",
+			input: map[string]interface{}{
+				"key": true,
+			},
+			err: `failed to parse keystore: json: cannot unmarshal bool into Go struct field unencrypted.key of type string`,
 		},
 		{
-			name:  "KeyShort",
-			input: `{"key":"0x295f0d1d592a90b333e26e85149708208e9f8e8bc18f6c77bd62f8ad7a6866"}`,
-			err:   `key of incorrect length 31`,
+			name: "KeyInvalid",
+			input: map[string]interface{}{
+				"key": "invalid",
+			},
+			err: `failed to decode key: encoding/hex: invalid byte: U+0069 'i'`,
 		},
 		{
-			name:  "KeyLong",
-			input: `{"key":"0x2525295f0d1d592a90b333e26e85149708208e9f8e8bc18f6c77bd62f8ad7a6866"}`,
-			err:   `key of incorrect length 33`,
-		},
-		{
-			name:  "Good",
-			input: `{"key":"0x25295f0d1d592a90b333e26e85149708208e9f8e8bc18f6c77bd62f8ad7a6866"}`,
+			name: "Good",
+			input: map[string]interface{}{
+				"key": "0x25295f0d1d592a90b333e26e85149708208e9f8e8bc18f6c77bd62f8ad7a6866",
+			},
 			output: []byte{
 				0x25, 0x29, 0x5f, 0x0d, 0x1d, 0x59, 0x2a, 0x90, 0xb3, 0x33, 0xe2, 0x6e, 0x85, 0x14, 0x97, 0x08,
 				0x20, 0x8e, 0x9f, 0x8e, 0x8b, 0xc1, 0x8f, 0x6c, 0x77, 0xbd, 0x62, 0xf8, 0xad, 0x7a, 0x68, 0x66,
@@ -62,10 +74,7 @@ func TestDecrypt(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			encryptor := unencrypted.New()
-			input := make(map[string]interface{})
-			err := json.Unmarshal([]byte(test.input), &input)
-			require.Nil(t, err)
-			output, err := encryptor.Decrypt(input, "")
+			output, err := encryptor.Decrypt(test.input, "")
 			if test.err != "" {
 				require.EqualError(t, err, test.err)
 			} else {
