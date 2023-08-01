@@ -1,4 +1,4 @@
-// Copyright © 2020 Weald Technology Trading
+// Copyright © 2020, 2023 Weald Technology Trading.
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -21,7 +21,7 @@ import (
 )
 
 // Decrypt decrypts the data provided, returning the secret.
-func (e *Encryptor) Decrypt(data map[string]interface{}, passphrase string) ([]byte, error) {
+func (e *Encryptor) Decrypt(data map[string]any, _ string) ([]byte, error) {
 	if data == nil {
 		return nil, errors.New("no data supplied")
 	}

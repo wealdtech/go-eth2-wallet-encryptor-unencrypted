@@ -22,12 +22,12 @@ import (
 )
 
 func TestDecrypt(t *testing.T) {
-	circular := make(map[string]interface{})
+	circular := make(map[string]any)
 	circular["here"] = &circular
 
 	tests := []struct {
 		name   string
-		input  map[string]interface{}
+		input  map[string]any
 		output []byte
 		err    string
 	}{
@@ -38,30 +38,30 @@ func TestDecrypt(t *testing.T) {
 		{
 			name:  "Circular",
 			input: circular,
-			err:   `failed to parse keystore: json: unsupported value: encountered a cycle via *map[string]interface {}`,
+			err:   `failed to parse keystore: json: unsupported value: encountered a cycle via map[string]interface {}`,
 		},
 		{
 			name:  "KeyMissing",
-			input: map[string]interface{}{},
+			input: map[string]any{},
 			err:   `key missing`,
 		},
 		{
 			name: "KeyWrongType",
-			input: map[string]interface{}{
+			input: map[string]any{
 				"key": true,
 			},
 			err: `failed to parse keystore: json: cannot unmarshal bool into Go struct field unencrypted.key of type string`,
 		},
 		{
 			name: "KeyInvalid",
-			input: map[string]interface{}{
+			input: map[string]any{
 				"key": "invalid",
 			},
 			err: `failed to decode key: encoding/hex: invalid byte: U+0069 'i'`,
 		},
 		{
 			name: "Good",
-			input: map[string]interface{}{
+			input: map[string]any{
 				"key": "0x25295f0d1d592a90b333e26e85149708208e9f8e8bc18f6c77bd62f8ad7a6866",
 			},
 			output: []byte{

@@ -43,7 +43,7 @@ func TestRoundTrip(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			encryptor := unencrypted.New()
-			input := make(map[string]interface{})
+			input := make(map[string]any)
 			err := json.Unmarshal([]byte(test.input), &input)
 			require.Nil(t, err)
 			secret, err := encryptor.Decrypt(input, test.passphrase)

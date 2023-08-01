@@ -1,4 +1,4 @@
-// Copyright © 2020 Weald Technology Trading
+// Copyright © 2020, 2023 Weald Technology Trading.
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -14,30 +14,31 @@ package unencrypted
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
+
+	"github.com/pkg/errors"
 )
 
 // Encrypt encrypts data.
-func (e *Encryptor) Encrypt(secret []byte, passphrase string) (map[string]interface{}, error) {
+func (e *Encryptor) Encrypt(secret []byte, _ string) (map[string]any, error) {
 	if secret == nil {
 		return nil, errors.New("no secret")
 	}
 
-	// Build the output
+	// Build the output.
 	output := &unencrypted{
 		Key: fmt.Sprintf("%#x", secret),
 	}
 
-	// We need to return a generic map; go to JSON and back to obtain it
+	// We need to return a generic map; go to JSON and back to obtain it.
 	bytes, err := json.Marshal(output)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to marshal output")
 	}
-	res := make(map[string]interface{})
+	res := make(map[string]any)
 	err = json.Unmarshal(bytes, &res)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to unmarshal output")
 	}
 
 	return res, nil
